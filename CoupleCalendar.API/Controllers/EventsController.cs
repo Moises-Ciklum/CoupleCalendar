@@ -39,10 +39,10 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllEvents()
+    public async Task<IActionResult> GetAllEvents([FromQuery] string? owner)
     {
         // We get the raw data from the repository
-        var eventsFromDb = await _repository.GetAllAsync();
+        var eventsFromDb = await _repository.GetAllAsync(owner);
 
         // We map it to the DTOs
         var response = eventsFromDb.Select(e => new EventResponseDto

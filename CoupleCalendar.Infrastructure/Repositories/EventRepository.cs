@@ -15,9 +15,16 @@ public class EventRepository : IEventRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<CalendarEvent>> GetAllAsync()
+    public async Task<IEnumerable<CalendarEvent>> GetAllAsync(string? owner = null)
     {
-        return await _context.Events.ToListAsync();
+        var query = _context.Events.AsQueryable();
+
+        if (!string.IsNullOrEmpty(owner))
+        {
+            query = query.Where(e => e.Owner == owner);
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<CalendarEvent> AddAsync(CalendarEvent calendarEvent)
