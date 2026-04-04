@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CoupleCalendar - Live View</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f4f4f9;
+        }
+
+        .event-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 5px solid #4CAF50;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📡 Live Calendar Events</h2>
+    <p>Waiting for new events... (Do not refresh the page!)</p>
+
+    <div id="eventsContainer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <script>
+        // 2. We build the connection to our Hub URL
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/calendarHub")
+            .build();
+
+        // 3. We tell the client what to do when it hears the "ReceiveNewEvent" message
+        connection.on("ReceiveNewEvent", function (newEvent) {
+            console.log("New event received from server!", newEvent);
+
+            // Create a visual card for the event
+            const card = document.createElement("div");
+            card.className = "event-card";
+            card.innerHTML = `
+                <strong>${newEvent.title}</strong> (${newEvent.type})<br/>
+                Owner: ${newEvent.owner} <br/>
+                <span class="timestamp">Start: ${new Date(newEvent.startDate).toLocaleString()} | End: ${new Date(newEvent.endDate).toLocaleString()}</span>
+            `;
+
+            // Add the new card to the top of our container
+            document.getElementById("eventsContainer").prepend(card);
+        });
+
+        // 4. Start the connection!
+        connection.start()
+            .then(() => console.log("✅ Connected to SignalR Hub successfully!"))
+            .catch(err => console.error("❌ Error connecting to Hub:", err));
+    </script>
+
+</body>
+</html>

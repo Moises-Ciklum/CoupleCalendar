@@ -1,9 +1,8 @@
-﻿using CoupleCalendar.Application.DTOs;
+﻿using CoupleCalendar.API.Hubs;
+using CoupleCalendar.Application.DTOs;
 using CoupleCalendar.Application.Services;
-using CoupleCalendar.Core.Entities;
-using CoupleCalendar.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CoupleCalendar.API.Controllers;
 
@@ -11,12 +10,12 @@ namespace CoupleCalendar.API.Controllers;
 [Route("api/[controller]")]
 public class EventsController : ControllerBase
 {
-    private readonly IEventRepository _repository; // No more Entity Framework here!
+    private readonly IHubContext<CalendarHub> _hubContext;
     private readonly IEventService _eventService;
 
-    public EventsController(IEventRepository repository, IEventService eventService)
+    public EventsController(IHubContext<CalendarHub> hubContext, IEventService eventService)
     {
-        _repository = repository;
+        _hubContext = hubContext;
         _eventService = eventService;
     }
 
@@ -24,6 +23,7 @@ public class EventsController : ControllerBase
     public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto requestDto)
     {
         var newEvent = await _eventService.CreateEventAsync(requestDto);
+        await _hubContext.Clients.All.SendAsync("ReceiveNewEvent", newEvent);
         return Ok(newEvent);
     }
 

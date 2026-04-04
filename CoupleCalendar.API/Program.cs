@@ -1,4 +1,5 @@
 using CoupleCalendar.API.ExceptionHandlers;
+using CoupleCalendar.API.Hubs;
 using CoupleCalendar.Application.Services;
 using CoupleCalendar.Core.Interfaces;
 using CoupleCalendar.Infrastructure.Data;
@@ -20,10 +21,11 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 app.UseExceptionHandler();
-
+app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -40,5 +42,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<CalendarHub>("/calendarHub");
 
 app.Run();
